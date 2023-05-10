@@ -15,5 +15,5 @@ build:
 
 .PHONY: run
 run:
-	@echo "Running build..."
+	@echo "Running Run..."
 	docker-compose up
