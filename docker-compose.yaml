@@ -11,17 +11,19 @@ services:
       - GO111MODULE=on
     stdin_open: true
     tty: true
+    ports:
+      - 3000:3000
 
   postgres:
-      image: postgres:latest
-      environment:
-        POSTGRES_USER: ${DB_USER}
-        POSTGRES_PASSWORD: ${DB_PASSWORD}
-      ports:
-        - 5432:5432
-      volumes:
-        - ./data:/var/lib/postgresql/data
-      restart: always
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    restart: always
 
   pgadmin:
     image: dpage/pgadmin4
