@@ -1,14 +1,16 @@
 package usecases
 
+import "time"
+
 type TransfersOutput struct {
-	ID                   int64   `json:"id"`
-	AccountOriginID      int64   `json:"account_origin_id"`
-	AccountDestinationID int64   `json:"account_destination_id"`
-	Amount               float64 `json:"amount"`
-	CreatedAt            string  `json:"created_at"`
+	ID                   int64
+	AccountOriginID      int64
+	AccountDestinationID int64
+	Amount               float64
+	CreatedAt            time.Time
 }
 
-func (c *useCase) GetListTransfers(originID int) ([]TransfersOutput, error) {
+func (c *useCase) GetListTransfers(originID int64) ([]TransfersOutput, error) {
 	transfers, err := c.repository.transfer.List(originID)
 	if err != nil {
 		return []TransfersOutput{}, err
