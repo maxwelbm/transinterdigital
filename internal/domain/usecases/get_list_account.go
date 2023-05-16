@@ -1,12 +1,14 @@
 package usecases
 
+import "time"
+
 type AccountOutput struct {
-	ID        int64   `json:"id"`
-	Name      string  `json:"name"`
-	CPF       string  `json:"cpf"`
-	Secret    string  `json:"secret"`
-	Balance   float64 `json:"balance"`
-	CreatedAt string  `json:"created_at"`
+	ID        int64
+	Name      string
+	CPF       string
+	Secret    string
+	Balance   float64
+	CreatedAt time.Time
 }
 
 func (c *useCase) GetListAccount() ([]AccountOutput, error) {

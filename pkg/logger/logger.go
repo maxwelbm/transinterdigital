@@ -7,7 +7,7 @@ import (
 
 var log *zap.Logger
 
-func init() {
+func New() *zap.Logger {
 	var err error
 
 	config := zap.NewProductionConfig()
@@ -23,6 +23,8 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	return log
 }
 
 func Info(message string, fields ...zap.Field) {

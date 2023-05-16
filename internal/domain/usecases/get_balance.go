@@ -1,7 +1,7 @@
 package usecases
 
 type BalanceOutput struct {
-	Balance float64 `json:"balance"`
+	Balance float64
 }
 
 func (c *useCase) GetBalance(accountID int) (BalanceOutput, error) {

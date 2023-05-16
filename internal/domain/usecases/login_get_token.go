@@ -2,14 +2,14 @@ package usecases
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
-	"os"
-	"time"
+	"github.com/maxwelbm/transinterdigital/pkg/cpf"
+	"github.com/maxwelbm/transinterdigital/pkg/token"
 )
 
 type TokenInput struct {
-	CPF    string `json:"cpf"`
-	Secret string `json:"secret"`
+	CPF       string
+	Secret    string
+	KeySecret string
 }
 
 type Token struct {
@@ -17,18 +17,19 @@ type Token struct {
 }
 
 func (c *useCase) LoginGetToken(input TokenInput) (Token, error) {
-	keySecret := os.Getenv("KEY_SECRET")
-
-	tk := jwt.New(jwt.SigningMethodHS256)
-	claims := tk.Claims.(jwt.MapClaims)
-	claims["cpf"] = input.CPF
-	claims["secret"] = input.Secret
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
-
-	token, err := tk.SignedString([]byte(keySecret))
-	if err != nil {
-		return Token{}, errors.New("error signing token")
+	if !cpf.Validate(input.CPF) {
+		return Token{}, errors.New("cpf invalid")
 	}
 
-	return Token{token}, nil
+	accountID, err := c.repository.account.GetAccountID(input.CPF, input.Secret)
+	if err != nil {
+		return Token{}, err
+	}
+
+	t, err := token.GenToken(accountID, input.KeySecret)
+	if err != nil {
+		return Token{}, err
+	}
+
+	return Token{t}, nil
 }

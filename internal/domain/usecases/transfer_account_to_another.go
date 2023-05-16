@@ -1,11 +1,15 @@
 package usecases
 
-import "errors"
+import (
+	"errors"
+	"github.com/maxwelbm/transinterdigital/internal/domain/entity"
+	"time"
+)
 
 type TransferInput struct {
-	AccountOriginID      int64   `json:"account_origin_id"`
-	AccountDestinationID int64   `json:"account_destination_id"`
-	Amount               float64 `json:"amount"`
+	AccountOriginID      int64
+	AccountDestinationID int64
+	Amount               float64
 }
 
 func (c *useCase) TransferAccountToAnother(input TransferInput) error {
@@ -14,8 +18,24 @@ func (c *useCase) TransferAccountToAnother(input TransferInput) error {
 		return err
 	}
 
+	if input.AccountDestinationID == input.AccountOriginID {
+		return errors.New("there is no way to transfer it to yourself")
+	}
+
 	if input.Amount > balanceOrigin {
 		return errors.New("insufficient balance to complete the transfer")
+	}
+
+	transfer := entity.Transfers{
+		AccountOriginID:      input.AccountOriginID,
+		AccountDestinationID: input.AccountDestinationID,
+		Amount:               input.Amount,
+		CreatedAt:            time.Now(),
+	}
+
+	err = c.repository.transfer.Save(transfer)
+	if err != nil {
+		return err
 	}
 
 	err = c.repository.account.UpdateBalance(int(input.AccountOriginID), balanceOrigin-input.Amount)

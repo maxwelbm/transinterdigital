@@ -2,11 +2,10 @@ package database
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/maxwelbm/transinterdigital/internal/domain/entity"
-	"github.com/maxwelbm/transinterdigital/pkg/logger"
 )
 
 func NewAccountRepository(db *pgx.Conn) *AccountRepository {
@@ -21,6 +20,7 @@ type Conn interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
 func (d *AccountRepository) Save(account *entity.Account) error {
@@ -31,9 +31,8 @@ func (d *AccountRepository) Save(account *entity.Account) error {
 	_, err := d.Db.Exec(context.Background(), query,
 		account.Name, account.CPF, account.Secret, account.Balance, account.CreatedAt)
 	if err != nil {
-		return errors.New("failed insert account from table: " + err.Error())
+		return err
 	}
-	logger.Info("create new account")
 	return nil
 }
 
@@ -49,19 +48,40 @@ func (d *AccountRepository) Balance(accountID int) (float64, error) {
 	err := row.Scan(&account.ID, &account.Name, &account.CPF, &account.Secret, &account.Balance, &account.CreatedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return 0, errors.New("none account find with id specified")
+			return 0, err
 		}
-		return 0, errors.New("failed execute the consult: " + err.Error())
+		return 0, err
 	}
 
 	return account.Balance, nil
 }
 
-func (d *AccountRepository) List() ([]entity.Account, error) {
-	query := `SELECT id, name, cpf, secret, balance, created_at FROM account`
-	rows, err := d.Db.Query(context.Background(), query)
+func (d *AccountRepository) GetAccountID(cpf, secret string) (int64, error) {
+	query := `
+		SELECT id, name, cpf, secret, balance, created_at
+		FROM account
+		WHERE cpf = $1 AND secret = $2
+	`
+	row := d.Db.QueryRow(context.Background(), query, cpf, secret)
+
+	var account entity.Account
+	err := row.Scan(&account.ID, &account.Name, &account.CPF, &account.Secret, &account.Balance, &account.CreatedAt)
 	if err != nil {
-		return []entity.Account{}, errors.New("failed execute the consult: " + err.Error())
+		if err == pgx.ErrNoRows {
+			return 0, err
+		}
+		return 0, err
+	}
+
+	return account.ID, nil
+}
+
+func (d *AccountRepository) List() ([]entity.Account, error) {
+	query := `select id, name, cpf, secret, balance, created_at from account`
+	rows, err := d.Db.Query(context.Background(), query)
+
+	if err != nil {
+		return []entity.Account{}, err
 	}
 	defer rows.Close()
 
@@ -71,24 +91,41 @@ func (d *AccountRepository) List() ([]entity.Account, error) {
 		var account entity.Account
 		err = rows.Scan(&account.ID, &account.Name, &account.CPF, &account.Secret, &account.Balance, &account.CreatedAt)
 		if err != nil {
-			return []entity.Account{}, errors.New("failed scan the line: " + err.Error())
+			fmt.Println("list: ", err)
+			return []entity.Account{}, err
 		}
 		accounts = append(accounts, account)
 	}
 
 	if err = rows.Err(); err != nil {
-		return []entity.Account{}, errors.New("error entry iteration the results: " + err.Error())
+		return []entity.Account{}, err
 	}
 
 	return accounts, nil
 }
 
 func (d *AccountRepository) UpdateBalance(accountID int, balance float64) error {
-	query := `UPDATE account SET balance = $1, WHERE id = $2`
-	_, err := d.Db.Exec(context.Background(),
-		query, accountID, balance)
+	query := `UPDATE public.account SET balance = $1 WHERE id = $2`
+	_, err := d.Db.Exec(context.Background(), query, balance, accountID)
 	if err != nil {
-		return errors.New("Failed to perform update: " + err.Error())
+		return err
 	}
+	return nil
+}
+
+func (d *AccountRepository) TransferAccountToAnother(originID, destinationID int, balance float64) error {
+	tx, err := d.Db.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(context.Background(), "UPDATE public.account SET balance = $1 WHERE id = $2", balance, originID)
+	if err != nil {
+		if err = tx.Rollback(context.Background()); err != nil {
+			return err
+		}
+		return err
+	}
+
 	return nil
 }
