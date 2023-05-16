@@ -1,4 +1,4 @@
-package http
+package api
 
 import (
 	"encoding/json"
@@ -7,18 +7,22 @@ import (
 	"net/http"
 )
 
-func (h Handler) CreateAccount(w http.ResponseWriter, r *http.Request) {
+func (h Handler) LoginGetToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
-	var account usecases.AccountInput
-	err := json.NewDecoder(r.Body).Decode(&account)
+
+	var customer usecases.TokenInput
+	err := json.NewDecoder(r.Body).Decode(&customer)
 	if err != nil {
 		helper.RespError(w, http.StatusBadRequest, "failed to serialize input struct body "+err.Error())
 		return
 	}
-	err = h.UseCase.CreateAccount(account)
+
+	token, err := h.UseCase.LoginGetToken(customer)
 	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "account creation failed "+err.Error())
+		helper.RespError(w, http.StatusInternalServerError, "token generation failed "+err.Error())
 		return
 	}
+
 	w.WriteHeader(http.StatusNoContent)
+	json.NewEncoder(w).Encode(token)
 }
