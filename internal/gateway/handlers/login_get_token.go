@@ -1,4 +1,4 @@
-package api
+package handlers
 
 import (
 	"encoding/json"
@@ -7,22 +7,33 @@ import (
 	"net/http"
 )
 
-func (h Handler) LoginGetToken(w http.ResponseWriter, r *http.Request) {
+type TokenInput struct {
+	CPF    string `json:"cpf"`
+	Secret string `json:"secret"`
+}
+
+func (h Handlers) LoginGetToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
-	var customer usecases.TokenInput
+	var customer TokenInput
 	err := json.NewDecoder(r.Body).Decode(&customer)
 	if err != nil {
-		helper.RespError(w, http.StatusBadRequest, "failed to serialize input struct body "+err.Error())
+		helper.RespError(w, http.StatusBadRequest, "failed to serialize input struct body")
 		return
 	}
 
-	token, err := h.UseCase.LoginGetToken(customer)
+	customerUseCase := usecases.TokenInput{
+		CPF:       customer.CPF,
+		Secret:    customer.Secret,
+		KeySecret: h.Config.KeySecret,
+	}
+
+	token, err := h.UseCase.LoginGetToken(customerUseCase)
 	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "token generation failed "+err.Error())
+		helper.RespError(w, http.StatusInternalServerError, "token generation failed")
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(token)
 }

@@ -1,4 +1,4 @@
-package api
+package handlers
 
 import (
 	"encoding/json"
@@ -7,15 +7,31 @@ import (
 	"net/http"
 )
 
-func (h Handler) CreateAccount(w http.ResponseWriter, r *http.Request) {
+type AccountInput struct {
+	Name    string  `json:"name"`
+	CPF     string  `json:"cpf"`
+	Secret  string  `json:"secret"`
+	Balance float64 `json:"balance"`
+}
+
+func (h Handlers) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
-	var account usecases.AccountInput
+
+	var account AccountInput
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
 		helper.RespError(w, http.StatusBadRequest, "failed to serialize input struct body")
 		return
 	}
-	err = h.UseCase.CreateAccount(account)
+
+	accountUsecase := usecases.AccountInput{
+		Name:    account.Name,
+		CPF:     account.CPF,
+		Secret:  account.Secret,
+		Balance: account.Balance,
+	}
+
+	err = h.UseCase.CreateAccount(accountUsecase)
 	if err != nil {
 		helper.RespError(w, http.StatusInternalServerError, "account creation failed ")
 		return

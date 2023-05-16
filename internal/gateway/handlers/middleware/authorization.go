@@ -1,22 +1,22 @@
 package middleware
 
 import (
+	"context"
+	"github.com/maxwelbm/transinterdigital/internal/config"
 	"github.com/maxwelbm/transinterdigital/pkg/helper"
 	"github.com/maxwelbm/transinterdigital/pkg/token"
 	"net/http"
-	"strconv"
 )
 
-func Authenticate(next http.HandlerFunc) http.HandlerFunc {
-	var originID int64 = 0
-	var err error = nil
+func Authenticate(next http.HandlerFunc, conf config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if originID, err = token.ValidToken(r); err != nil {
+		originID, err := token.ValidToken(r, conf.KeySecret)
+		if err != nil {
 			helper.RespError(w, http.StatusUnauthorized, err.Error())
 			return
 		}
-		r.Header.Set("origin_id", strconv.FormatInt(originID, 10))
-		// TODO: set context
+		ctx := context.WithValue(r.Context(), "origin_id", originID)
+		r = r.WithContext(ctx)
 		next(w, r)
 	}
 }

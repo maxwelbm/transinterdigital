@@ -1,4 +1,4 @@
-package api
+package handlers
 
 import (
 	"encoding/json"
@@ -8,7 +8,9 @@ import (
 	"strconv"
 )
 
-func (h Handler) GetBalanceAccount(w http.ResponseWriter, r *http.Request) {
+func (h Handlers) GetBalanceAccount(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+
 	paramAccountID := chi.URLParam(r, "account_id")
 	accountID, err := strconv.Atoi(paramAccountID)
 	if err != nil {
