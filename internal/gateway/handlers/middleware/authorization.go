@@ -4,14 +4,19 @@ import (
 	"github.com/maxwelbm/transinterdigital/pkg/helper"
 	"github.com/maxwelbm/transinterdigital/pkg/token"
 	"net/http"
+	"strconv"
 )
 
-func Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
+func Authenticate(next http.HandlerFunc) http.HandlerFunc {
+	var originID int64 = 0
+	var err error = nil
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := token.ValidToken(r); err != nil {
+		if originID, err = token.ValidToken(r); err != nil {
 			helper.RespError(w, http.StatusUnauthorized, err.Error())
 			return
 		}
-		nextFunc(w, r)
+		r.Header.Set("origin_id", strconv.FormatInt(originID, 10))
+		// TODO: set context
+		next(w, r)
 	}
 }

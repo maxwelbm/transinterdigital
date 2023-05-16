@@ -1,4 +1,4 @@
-package http
+package api
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 func (h Handler) GetListAccount(w http.ResponseWriter, r *http.Request) {
 	accounts, err := h.UseCase.GetListAccount()
 	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "failed to get account list "+err.Error())
+		helper.RespError(w, http.StatusInternalServerError, "failed to get account list ")
 		return
 	}
 	w.WriteHeader(http.StatusOK)
