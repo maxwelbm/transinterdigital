@@ -9,6 +9,10 @@ import (
 
 func ValidToken(r *http.Request, keySecret string) (int64, error) {
 	tokenString := r.Header.Get("Authorization")
+	return CheckToken(tokenString, keySecret)
+}
+
+func CheckToken(tokenString, keySecret string) (int64, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("invalid method signature")

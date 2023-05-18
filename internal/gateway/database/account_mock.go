@@ -8,6 +8,10 @@ import (
 
 type DbMock struct{}
 
+func (d DbMock) Begin(ctx context.Context) (pgx.Tx, error) {
+	return nil, nil
+}
+
 func (d DbMock) Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error) {
 	return pgconn.CommandTag{}, nil
 }
