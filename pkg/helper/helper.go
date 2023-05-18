@@ -10,3 +10,12 @@ func RespError(w http.ResponseWriter, status int, msg string) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(struct{ Message string }{msg})
 }
+
+type Response struct {
+	Status int
+	Err    error
+}
+
+func (r Response) Error() string {
+	return r.Err.Error()
+}

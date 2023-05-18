@@ -11,9 +11,9 @@ func (h Handlers) GetListTransfers(w http.ResponseWriter, r *http.Request) {
 
 	originID := r.Context().Value("origin_id")
 
-	transfers, err := h.UseCase.GetListTransfers(originID.(int64))
-	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "failed to get transfer list ")
+	transfers, errResp := h.UseCase.GetListTransfers(originID.(int64))
+	if errResp != nil {
+		helper.RespError(w, errResp.Status, errResp.Error())
 		return
 	}
 

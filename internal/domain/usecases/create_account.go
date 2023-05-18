@@ -4,6 +4,8 @@ import (
 	"errors"
 	"github.com/maxwelbm/transinterdigital/internal/domain/entity"
 	"github.com/maxwelbm/transinterdigital/pkg/cpf"
+	"github.com/maxwelbm/transinterdigital/pkg/helper"
+	"net/http"
 )
 
 type AccountInput struct {
@@ -13,10 +15,10 @@ type AccountInput struct {
 	Balance float64
 }
 
-func (c *useCase) CreateAccount(input AccountInput) error {
+func (c *useCase) CreateAccount(input AccountInput) *helper.Response {
 
 	if !cpf.Validate(input.CPF) {
-		return errors.New("cpf invalid")
+		return &helper.Response{Status: http.StatusBadRequest, Err: errors.New("cpf invalid")}
 	}
 
 	account := entity.Account{
@@ -27,7 +29,7 @@ func (c *useCase) CreateAccount(input AccountInput) error {
 	}
 
 	if err := c.repository.account.Save(&account); err != nil {
-		return err
+		return &helper.Response{Status: http.StatusInternalServerError, Err: errors.New("failed in save account")}
 	}
 
 	return nil

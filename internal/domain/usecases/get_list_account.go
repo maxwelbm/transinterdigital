@@ -1,6 +1,10 @@
 package usecases
 
-import "time"
+import (
+	"github.com/maxwelbm/transinterdigital/pkg/helper"
+	"net/http"
+	"time"
+)
 
 type AccountOutput struct {
 	ID        int64
@@ -11,10 +15,10 @@ type AccountOutput struct {
 	CreatedAt time.Time
 }
 
-func (c *useCase) GetListAccount() ([]AccountOutput, error) {
+func (c *useCase) GetListAccount() ([]AccountOutput, *helper.Response) {
 	accounts, err := c.repository.account.List()
 	if err != nil {
-		return []AccountOutput{}, err
+		return []AccountOutput{}, &helper.Response{Status: http.StatusInternalServerError, Err: err}
 	}
 
 	accountsOutput := []AccountOutput{}

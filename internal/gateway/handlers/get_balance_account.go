@@ -14,13 +14,13 @@ func (h Handlers) GetBalanceAccount(w http.ResponseWriter, r *http.Request) {
 	paramAccountID := chi.URLParam(r, "account_id")
 	accountID, err := strconv.Atoi(paramAccountID)
 	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "failed parse type string to integer "+err.Error())
+		helper.RespError(w, http.StatusBadRequest, "failed parse type string to integer "+err.Error())
 		return
 	}
 
-	accounts, err := h.UseCase.GetBalance(accountID)
-	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "failed to get account list "+err.Error())
+	accounts, errResp := h.UseCase.GetBalance(accountID)
+	if errResp != nil {
+		helper.RespError(w, errResp.Status, errResp.Error())
 		return
 	}
 

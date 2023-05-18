@@ -1,6 +1,9 @@
 package usecases
 
-import "github.com/maxwelbm/transinterdigital/internal/domain/entity"
+import (
+	"github.com/maxwelbm/transinterdigital/internal/domain/entity"
+	"github.com/maxwelbm/transinterdigital/pkg/helper"
+)
 
 type useCase struct {
 	repository Repository
@@ -12,12 +15,12 @@ type Repository struct {
 }
 
 type UseCase interface {
-	CreateAccount(input AccountInput) error
-	GetListAccount() ([]AccountOutput, error)
-	GetBalance(accountID int) (BalanceOutput, error)
-	GetListTransfers(originID int64) ([]TransfersOutput, error)
-	TransferAccountToAnother(input TransferInput) error
-	LoginGetToken(input TokenInput) (Token, error)
+	CreateAccount(input AccountInput) *helper.Response
+	GetListAccount() ([]AccountOutput, *helper.Response)
+	GetBalance(accountID int) (BalanceOutput, *helper.Response)
+	GetListTransfers(originID int64) ([]TransfersOutput, *helper.Response)
+	TransferAccountToAnother(input TransferInput) *helper.Response
+	LoginGetToken(input TokenInput) (Token, *helper.Response)
 }
 
 func New(repository Repository) *useCase {

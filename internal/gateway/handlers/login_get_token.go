@@ -28,9 +28,9 @@ func (h Handlers) LoginGetToken(w http.ResponseWriter, r *http.Request) {
 		KeySecret: h.Config.KeySecret,
 	}
 
-	token, err := h.UseCase.LoginGetToken(customerUseCase)
-	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "token generation failed")
+	token, errResp := h.UseCase.LoginGetToken(customerUseCase)
+	if errResp != nil {
+		helper.RespError(w, errResp.Status, errResp.Error())
 		return
 	}
 
