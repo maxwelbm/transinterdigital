@@ -31,9 +31,9 @@ func (h Handlers) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		Balance: account.Balance,
 	}
 
-	err = h.UseCase.CreateAccount(accountUsecase)
-	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "account creation failed ")
+	errResp := h.UseCase.CreateAccount(accountUsecase)
+	if errResp != nil {
+		helper.RespError(w, errResp.Status, errResp.Error())
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

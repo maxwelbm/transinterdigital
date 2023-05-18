@@ -1,6 +1,10 @@
 package usecases
 
-import "time"
+import (
+	"github.com/maxwelbm/transinterdigital/pkg/helper"
+	"net/http"
+	"time"
+)
 
 type TransfersOutput struct {
 	ID                   int64
@@ -10,10 +14,10 @@ type TransfersOutput struct {
 	CreatedAt            time.Time
 }
 
-func (c *useCase) GetListTransfers(originID int64) ([]TransfersOutput, error) {
+func (c *useCase) GetListTransfers(originID int64) ([]TransfersOutput, *helper.Response) {
 	transfers, err := c.repository.transfer.List(originID)
 	if err != nil {
-		return []TransfersOutput{}, err
+		return []TransfersOutput{}, &helper.Response{Status: http.StatusInternalServerError, Err: err}
 	}
 
 	transfersOutput := []TransfersOutput{}

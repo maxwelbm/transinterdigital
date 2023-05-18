@@ -31,9 +31,9 @@ func (h Handlers) TransferAccountToAnother(w http.ResponseWriter, r *http.Reques
 		Amount:               transfer.Amount,
 	}
 
-	err = h.UseCase.TransferAccountToAnother(transferInput)
-	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "account creation failed")
+	errResp := h.UseCase.TransferAccountToAnother(transferInput)
+	if errResp != nil {
+		helper.RespError(w, errResp.Status, errResp.Error())
 		return
 	}
 

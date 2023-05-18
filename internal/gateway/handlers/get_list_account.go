@@ -9,9 +9,9 @@ import (
 func (h Handlers) GetListAccount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
-	accounts, err := h.UseCase.GetListAccount()
-	if err != nil {
-		helper.RespError(w, http.StatusInternalServerError, "failed to get account list ")
+	accounts, errResp := h.UseCase.GetListAccount()
+	if errResp != nil {
+		helper.RespError(w, errResp.Status, errResp.Error())
 		return
 	}
 
